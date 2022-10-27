@@ -8,8 +8,10 @@ const File = ({ file }) => {
 	const dispatch = useDispatch()
 	const { currentDir } = useSelector(state => state.file)
 	const openDirHandler = () => {
-		dispatch(pushStack(currentDir))
-		dispatch(setCurrentDir(file._id))
+		if (file.type === 'dir') {
+			dispatch(pushStack(currentDir))
+			dispatch(setCurrentDir(file._id))
+		}
 	}
 
 	return (

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getFiles } from '../../actions/file'
+import { getFiles, uploadFile } from '../../actions/file'
 import s from './Disk.module.sass'
 
 import arrowIcon from './../../assets/icons/arrow.svg'
@@ -24,6 +24,13 @@ const Disk = () => {
 		dispatch(popStack())
 	}
 
+	const fileUploadHandler = e => {
+		const files = [...e.target.files]
+		files.forEach(file => {
+			dispatch(uploadFile(file, currentDir))
+		})
+	}
+
 	return (
 		<section className={s.wrapper}>
 			<h2 className={s.title}>Files</h2>
@@ -41,6 +48,10 @@ const Disk = () => {
 					Create new folder
 				</button>
 			</div>
+			<label className={s.label}>
+				<span>Upload File</span>
+				<input onChange={fileUploadHandler} type='file' multiple />
+			</label>
 			<FileList />
 			<Popup />
 		</section>

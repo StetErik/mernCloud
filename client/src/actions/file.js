@@ -34,4 +34,30 @@ const createDir = (dirId, name) => async dispatch => {
 	}
 }
 
-export { getFiles, createDir }
+const uploadFile = (file, dirId) => async dispatch => {
+	try {
+		const formData = new FormData()
+		formData.append('file', file)
+		if (dirId) {
+			formData.append('parent', dirId)
+		}
+		const { data } = await axios.post(
+			'http://localhost:3008/file/upload',
+			formData,
+			{
+				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+				onUploadProgress: progressEvent => {
+					let progress = Math.round(
+						(progressEvent.loaded * 100) / progressEvent.total
+					)
+					console.log(progress)
+				},
+			}
+		)
+		dispatch(addFile(data))
+	} catch (e) {
+		console.log(e.response.data)
+	}
+}
+
+export { getFiles, createDir, uploadFile }
