@@ -1,4 +1,5 @@
 const express = require('express')
+const fileUpload = require('express-fileupload')
 const mongoose = require('mongoose')
 const cors = require('./middlewares/corsMiddleware')
 require('dotenv').config()
@@ -8,6 +9,7 @@ const app = express()
 
 app.use(cors)
 app.use(express.json())
+app.use(fileUpload({}))
 app.use('/auth', require('./routes/authRoutes'))
 app.use('/file', require('./routes/fileRoutes'))
 
