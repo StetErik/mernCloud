@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getFiles, uploadFile } from '../../actions/file'
 import s from './Disk.module.sass'
@@ -11,6 +11,7 @@ import { popStack, setPopupDisplay } from '../../reducers/fileReducer'
 const Disk = () => {
 	const dispatch = useDispatch()
 	const { currentDir } = useSelector(state => state.file)
+	const [dragState, setDragState] = useState(false)
 
 	useEffect(() => {
 		dispatch(getFiles(currentDir))
@@ -31,8 +32,33 @@ const Disk = () => {
 		})
 	}
 
-	return (
-		<section className={s.wrapper}>
+	const dragEnterHandler = event => {
+		event.preventDefault()
+		event.stopPropagation()
+		setDragState(true)
+	}
+	const dragLeaveHandler = event => {
+		event.preventDefault()
+		event.stopPropagation()
+		setDragState(false)
+	}
+	const dropHandler = event => {
+		event.preventDefault()
+		event.stopPropagation()
+		const files = [...event.dataTransfer.files]
+		files.forEach(file => {
+			dispatch(uploadFile(file, currentDir))
+		})
+		setDragState(false)
+	}
+
+	return !dragState ? (
+		<section
+			className={s.wrapper}
+			onDragEnter={dragEnterHandler}
+			onDragLeave={dragLeaveHandler}
+			onDragOver={dragEnterHandler}
+		>
 			<h2 className={s.title}>Files</h2>
 			<div className={s.btns}>
 				<button
@@ -54,6 +80,16 @@ const Disk = () => {
 			</label>
 			<FileList />
 			<Popup />
+		</section>
+	) : (
+		<section
+			className={s.drag}
+			onDragEnter={dragEnterHandler}
+			onDragLeave={dragLeaveHandler}
+			onDragOver={dragEnterHandler}
+			onDrop={dropHandler}
+		>
+			Drag Area
 		</section>
 	)
 }
