@@ -17,17 +17,12 @@ const File = ({ file }) => {
 
 	function downloadClickHandler(e) {
 		e.stopPropagation()
-		e.preventDefault()
 		downloadFile(file)
 	}
 
 	return (
 		<li className={s.item} onClick={openDirHandler}>
-			<img
-				className={s.img}
-				src={file.type === 'dir' ? folderIcon : fileIcon}
-				alt='icon'
-			/>
+			<img className={s.img} src={file.type === 'dir' ? folderIcon : fileIcon} alt='icon' />
 			<h6 className={s.name}>{file.name}</h6>
 			{file.type !== 'dir' && (
 				<button className={s.download} onClick={downloadClickHandler}>

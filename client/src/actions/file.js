@@ -12,11 +12,7 @@ const getFiles = dirId => async dispatch => {
 
 const createDir = (dirId, name) => async dispatch => {
 	try {
-		const { data } = await axiosInstance.post('/file', {
-			name,
-			type: 'dir',
-			parent: dirId,
-		})
+		const { data } = await axiosInstance.post('/file', { name, type: 'dir', parent: dirId })
 		dispatch(addFile(data))
 	} catch (e) {
 		console.log(e.response.data)

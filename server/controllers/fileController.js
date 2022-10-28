@@ -9,9 +9,7 @@ class FileController {
 		try {
 			const { name, type, parent } = req.body
 			const file = new File({ name, type, parent, user: req.user.id })
-			const parentFile = await File.findOne({
-				_id: parent,
-			})
+			const parentFile = await File.findOne({ _id: parent })
 			if (!parentFile) {
 				file.path = name
 				await fileService.createDir(file)
@@ -29,10 +27,7 @@ class FileController {
 	}
 	async getFiles(req, res) {
 		try {
-			const files = await File.find({
-				parent: req.query.parent,
-				user: req.user.id,
-			})
+			const files = await File.find({ parent: req.query.parent, user: req.user.id })
 			res.json(files)
 		} catch (error) {
 			res.status(500).json({ message: error.message })
@@ -41,11 +36,7 @@ class FileController {
 	async uploadFile(req, res) {
 		try {
 			const { file } = req.files
-			const parent = await File.findOne({
-				user: req.user.id,
-				_id: req.body.parent,
-			})
-
+			const parent = await File.findOne({ user: req.user.id, _id: req.body.parent })
 			const user = await User.findOne({ _id: req.user.id })
 
 			if (user.usedSpace + file.size > user.diskSpace) {
