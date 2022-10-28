@@ -2,6 +2,7 @@ const fs = require('fs')
 const File = require('../models/fileModel')
 const User = require('../models/userModel')
 const fileService = require('../services/fileService')
+const pathNode = require('path')
 
 class FileController {
 	async createDir(req, res) {
@@ -15,7 +16,7 @@ class FileController {
 				file.path = name
 				await fileService.createDir(file)
 			} else {
-				file.path = `${parentFile.path}\/${name}`
+				file.path = pathNode.join(`${parentFile.path}`, `${name}`)
 				parentFile.children.push(file._id)
 				await parentFile.save()
 				await fileService.createDir(file)
@@ -30,6 +31,7 @@ class FileController {
 		try {
 			const files = await File.find({
 				parent: req.query.parent,
+				user: req.user.id,
 			})
 			res.json(files)
 		} catch (error) {
@@ -53,9 +55,9 @@ class FileController {
 			let path = null
 
 			if (parent) {
-				path = `${process.env.FILE_PATH}\/${user._id}\/${parent.path}\/${file.name}`
+				path = pathNode.join(`${process.env.FILE_PATH}`, `${user._id}`, `${parent.path}`, `${file.name}`)
 			} else {
-				path = `${process.env.FILE_PATH}\/${user._id}\/${file.name}`
+				path = pathNode.join(`${process.env.FILE_PATH}`, `${user._id}`, `${file.name}`)
 			}
 
 			if (fs.existsSync(path)) {
@@ -78,6 +80,18 @@ class FileController {
 			res.json(dbFile)
 		} catch (error) {
 			res.status(500).json(error.message)
+		}
+	}
+	async downloadFile(req, res) {
+		try {
+			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
+			const path = pathNode.join(`${process.env.FILE_PATH}`, `${req.user.id}`, `${file.path}`, `${file.name}`)
+			if (fs.existsSync(path)) {
+				return res.download(path, file.name)
+			}
+			return res.status(400).json({ message: 'Download Error' })
+		} catch (e) {
+			res.status(500).json(e.message)
 		}
 	}
 }

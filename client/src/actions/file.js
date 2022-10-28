@@ -1,14 +1,9 @@
-import axios from 'axios'
 import { addFile, setFilesAC } from '../reducers/fileReducer'
+import axiosInstance from '../utils/axios'
 
 const getFiles = dirId => async dispatch => {
 	try {
-		const { data } = await axios.get(
-			`http://localhost:3008/file${dirId ? '?parent=' + dirId : ''}`,
-			{
-				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-			}
-		)
+		const { data } = await axiosInstance(`/file${dirId ? '?parent=' + dirId : ''}`)
 		dispatch(setFilesAC(data))
 	} catch (error) {
 		console.log(error.message)
@@ -17,17 +12,11 @@ const getFiles = dirId => async dispatch => {
 
 const createDir = (dirId, name) => async dispatch => {
 	try {
-		const { data } = await axios.post(
-			'http://localhost:3008/file',
-			{
-				name,
-				type: 'dir',
-				parent: dirId,
-			},
-			{
-				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-			}
-		)
+		const { data } = await axiosInstance.post('/file', {
+			name,
+			type: 'dir',
+			parent: dirId,
+		})
 		dispatch(addFile(data))
 	} catch (e) {
 		console.log(e.response.data)
@@ -41,23 +30,34 @@ const uploadFile = (file, dirId) => async dispatch => {
 		if (dirId) {
 			formData.append('parent', dirId)
 		}
-		const { data } = await axios.post(
-			'http://localhost:3008/file/upload',
-			formData,
-			{
-				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-				onUploadProgress: progressEvent => {
-					let progress = Math.round(
-						(progressEvent.loaded * 100) / progressEvent.total
-					)
-					console.log(progress)
-				},
-			}
-		)
+		const { data } = await axiosInstance.post('/file/upload', formData, {
+			onUploadProgress: progressEvent => {
+				let progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+				console.log(progress)
+			},
+		})
 		dispatch(addFile(data))
 	} catch (e) {
 		console.log(e.response.data)
 	}
 }
 
-export { getFiles, createDir, uploadFile }
+const downloadFile = async file => {
+	try {
+		const response = await axiosInstance(`/file/download?id=${file._id}`, {
+			responseType: 'blob',
+		})
+		if (response.status === 200) {
+			const link = document.createElement('a')
+			link.href = window.URL.createObjectURL(response.data)
+			link.download = file.name
+			document.body.appendChild(link)
+			link.click()
+			link.remove()
+		}
+	} catch (error) {
+		console.log(error.message)
+	}
+}
+
+export { getFiles, createDir, uploadFile, downloadFile }

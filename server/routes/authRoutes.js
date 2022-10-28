@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
 	}
 })
 
-router.get('/auth', auth, async (req, res) => {
+router.get('/', auth, async (req, res) => {
 	try {
 		const user = await User.findOne({ _id: req.user.id })
 		if (!user) {

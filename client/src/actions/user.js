@@ -1,11 +1,10 @@
 import axios from 'axios'
 import { logOutAC, setUserAC } from '../reducers/userReducer'
-
-const MY_URL = 'http://localhost:3008/auth'
+import axiosInstance from '../utils/axios'
 
 const registration = async (email, password) => {
 	try {
-		const response = await axios.post(MY_URL + '/registration', {
+		const response = await axiosInstance.post('/auth/registration', {
 			email,
 			password,
 		})
@@ -17,7 +16,10 @@ const registration = async (email, password) => {
 
 const login = (email, password) => async dispatch => {
 	try {
-		const response = await axios.post(MY_URL + '/login', { email, password })
+		const response = await axiosInstance.post('/auth/login', {
+			email,
+			password,
+		})
 		dispatch(setUserAC(response.data.user))
 		localStorage.setItem('token', response.data.token)
 	} catch (e) {
@@ -32,13 +34,11 @@ const logOut = () => dispatch => {
 
 const auth = () => async dispatch => {
 	try {
-		const response = await axios.get(MY_URL + '/auth', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		})
+		const response = await axiosInstance('/auth')
 		dispatch(setUserAC(response.data.user))
 		localStorage.setItem('token', response.data.token)
 	} catch (e) {
-		console.log(e.message, '==>', e.response.data.message)
+		console.log(e.response.data.message)
 		localStorage.removeItem('token')
 	}
 }
