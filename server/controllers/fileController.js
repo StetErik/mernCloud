@@ -57,12 +57,16 @@ class FileController {
 
 			file.mv(path)
 			const type = file.name.split('.').pop()
+			let filePath = file.name
+			if (parent) {
+				filePath = pathNode.join(`${parent.path}`, `${file.name}`)
+			}
 
 			const dbFile = new File({
 				type,
 				name: file.name,
 				size: file.size,
-				path: parent?.path,
+				path: filePath,
 				user: user._id,
 				parent: parent?._id,
 			})
@@ -83,6 +87,19 @@ class FileController {
 			return res.status(400).json({ message: 'Download Error' })
 		} catch (e) {
 			res.status(500).json(e.message)
+		}
+	}
+	async deleteFile(req, res) {
+		try {
+			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
+			if (!file) {
+				return res.status(500).json({ message: 'File was not founded' })
+			}
+			const response = await fileService.deleteFile(file)
+			await file.remove()
+			res.json(response)
+		} catch (e) {
+			res.status(400).json(e.message)
 		}
 	}
 }

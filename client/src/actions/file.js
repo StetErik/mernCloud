@@ -1,5 +1,8 @@
-import { addFile, setFilesAC } from '../reducers/fileReducer'
+import { addFile, deleteFileAC, setFilesAC } from '../reducers/fileReducer'
+import { changeUploadFile, uploadFileShow, uploadShow } from '../reducers/uploadReducer'
 import axiosInstance from '../utils/axios'
+
+let tempId = 0
 
 const getFiles = dirId => async dispatch => {
 	try {
@@ -26,10 +29,13 @@ const uploadFile = (file, dirId) => async dispatch => {
 		if (dirId) {
 			formData.append('parent', dirId)
 		}
+		const uploaderFile = { name: file.name, progress: 0, id: ++tempId }
+		dispatch(uploadShow())
+		dispatch(uploadFileShow(uploaderFile))
 		const { data } = await axiosInstance.post('/file/upload', formData, {
 			onUploadProgress: progressEvent => {
 				let progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-				console.log(progress)
+				dispatch(changeUploadFile({ ...uploaderFile, progress }))
 			},
 		})
 		dispatch(addFile(data))
@@ -40,9 +46,7 @@ const uploadFile = (file, dirId) => async dispatch => {
 
 const downloadFile = async file => {
 	try {
-		const response = await axiosInstance(`/file/download?id=${file._id}`, {
-			responseType: 'blob',
-		})
+		const response = await axiosInstance(`/file/download?id=${file._id}`, { responseType: 'blob' })
 		if (response.status === 200) {
 			const link = document.createElement('a')
 			link.href = window.URL.createObjectURL(response.data)
@@ -56,4 +60,14 @@ const downloadFile = async file => {
 	}
 }
 
-export { getFiles, createDir, uploadFile, downloadFile }
+const deleteFile = file => async dispatch => {
+	try {
+		const { data } = await axiosInstance.delete(`/file?id=${file._id}`)
+		dispatch(deleteFileAC(file._id))
+		console.log(data.message)
+	} catch (error) {
+		console.log(error.response.data)
+	}
+}
+
+export { getFiles, createDir, uploadFile, downloadFile, deleteFile }

@@ -1,0 +1,36 @@
+@import './../../utils/colors'
+
+.wrapper
+	background-color: #fff
+	border-radius: 10px
+	margin-bottom: 8px
+	padding: 10px
+.header
+	display: flex
+	justify-content: space-between
+	margin-bottom: 5px
+.name
+
+.close
+	width: 18px
+	height: 18px
+.progress
+	position: relative
+	&::before
+		content: ''
+		position: absolute
+		width: 100%
+		height: 100%
+		border-radius: 10px
+		background-color: $base-color
+.bar
+	position: absolute
+	height: 100%
+	border-radius: 10px
+	background-color: green
+.percent
+	text-align: center
+	display: block
+	position: relative
+	z-index: 5
+	color: #fff
