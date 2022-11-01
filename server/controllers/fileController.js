@@ -27,7 +27,24 @@ class FileController {
 	}
 	async getFiles(req, res) {
 		try {
-			const files = await File.find({ parent: req.query.parent, user: req.user.id })
+			const { sort, parent } = req.query
+			let files
+			switch (sort) {
+				case 'name':
+					files = await File.find({ parent, user: req.user.id }).sort({ name: -1 })
+					break
+				case 'type':
+					files = await File.find({ parent, user: req.user.id }).sort({ type: 1 })
+					break
+				case 'date':
+					files = await File.find({ parent, user: req.user.id }).sort({ date: -1 })
+					break
+				case 'size':
+					files = await File.find({ parent, user: req.user.id }).sort({ size: -1 })
+					break
+				default:
+					files = await File.find({ parent, user: req.user.id })
+			}
 			res.json(files)
 		} catch (error) {
 			res.status(500).json({ message: error.message })
@@ -98,6 +115,15 @@ class FileController {
 			const response = await fileService.deleteFile(file)
 			await file.remove()
 			res.json(response)
+		} catch (e) {
+			res.status(400).json(e.message)
+		}
+	}
+	async searchFiles(req, res) {
+		try {
+			const { search } = req.query
+			const files = await File.find({ user: req.user.id })
+			res.json(files.filter(file => file.name.includes(search)))
 		} catch (e) {
 			res.status(400).json(e.message)
 		}

@@ -8,16 +8,19 @@ import FileList from '../FileList/FileList'
 import Popup from '../Popup/Popup'
 import { popStack, setPopupDisplay } from '../../reducers/fileReducer'
 import Uploader from '../Uploader/Uploader'
+import Loader from '../Loader'
 
 const Disk = () => {
 	const dispatch = useDispatch()
 	const { currentDir } = useSelector(state => state.file)
 	const { isUploaderVisible } = useSelector(state => state.upload)
 	const [dragState, setDragState] = useState(false)
+	const [sortValue, setSortValue] = useState('type')
+	const { loader } = useSelector(state => state.app)
 
 	useEffect(() => {
-		dispatch(getFiles(currentDir))
-	}, [currentDir])
+		dispatch(getFiles(currentDir, sortValue))
+	}, [currentDir, sortValue])
 
 	const openPopupHandle = () => {
 		dispatch(setPopupDisplay('flex'))
@@ -53,6 +56,16 @@ const Disk = () => {
 		})
 		setDragState(false)
 	}
+	const sortValueHandler = e => {
+		setSortValue(e.target.value)
+	}
+	if (loader) {
+		return (
+			<div className={s.loader}>
+				<Loader />
+			</div>
+		)
+	}
 
 	return !dragState ? (
 		<section
@@ -62,18 +75,29 @@ const Disk = () => {
 			onDragOver={dragEnterHandler}
 		>
 			<h2 className={s.title}>Files</h2>
-			<div className={s.btns}>
-				<button className={[s.btn, s.btn__back].join(' ')} onClick={backClickHandler}>
-					<img src={arrowIcon} alt='arrowIcon' />
-				</button>
-				<button className={[s.btn, s.btn__create].join(' ')} onClick={openPopupHandle}>
-					Create new folder
-				</button>
+			<div className={s.top}>
+				<div className={s.btns}>
+					<button className={[s.btn, s.btn__back].join(' ')} onClick={backClickHandler}>
+						<img src={arrowIcon} alt='arrowIcon' />
+					</button>
+					<button className={[s.btn, s.btn__create].join(' ')} onClick={openPopupHandle}>
+						Create new folder
+					</button>
+				</div>
+				<label className={s.label}>
+					<span>Upload File</span>
+					<input onChange={fileUploadHandler} type='file' multiple />
+				</label>
+				<div className={s.sortBlock}>
+					<span>Sort: </span>
+					<select defaultValue={sortValue} onChange={sortValueHandler}>
+						<option value='type'>Type</option>
+						<option value='name'>Name</option>
+						<option value='date'>Date</option>
+						<option value='size'>Size</option>
+					</select>
+				</div>
 			</div>
-			<label className={s.label}>
-				<span>Upload File</span>
-				<input onChange={fileUploadHandler} type='file' multiple />
-			</label>
 			<FileList />
 			<Popup />
 			{isUploaderVisible && <Uploader />}

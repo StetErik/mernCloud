@@ -4,6 +4,7 @@ import folderIcon from './../../assets/icons/folder.svg'
 import { pushStack, setCurrentDir } from '../../reducers/fileReducer'
 import { useDispatch, useSelector } from 'react-redux'
 import { deleteFile, downloadFile } from '../../actions/file'
+import sizeFormat from '../../utils/sizeFormat'
 
 const File = ({ file }) => {
 	const dispatch = useDispatch()
@@ -38,7 +39,7 @@ const File = ({ file }) => {
 				Delete
 			</button>
 			<span className={s.date}>{file.date.slice(0, 10)}</span>
-			<span className={s.size}>{+file.size}</span>
+			<span className={s.size}>{sizeFormat(file.size)}</span>
 		</li>
 	)
 }

@@ -9,5 +9,6 @@ router.post('/upload', auth, fileController.uploadFile)
 router.get('', auth, fileController.getFiles)
 router.get('/download', auth, fileController.downloadFile)
 router.delete('', auth, fileController.deleteFile)
+router.get('/search', auth, fileController.searchFiles)
 
 module.exports = router

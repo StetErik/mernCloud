@@ -1,15 +1,29 @@
+import { hideLoader, showLoader } from '../reducers/appReducer'
 import { addFile, deleteFileAC, setFilesAC } from '../reducers/fileReducer'
 import { changeUploadFile, uploadFileShow, uploadShow } from '../reducers/uploadReducer'
 import axiosInstance from '../utils/axios'
 
 let tempId = 0
 
-const getFiles = dirId => async dispatch => {
+const getFiles = (dirId, sort) => async dispatch => {
 	try {
-		const { data } = await axiosInstance(`/file${dirId ? '?parent=' + dirId : ''}`)
+		dispatch(showLoader())
+		let URL = '/file'
+		if (dirId) {
+			URL = '/file?parent=' + dirId
+		}
+		if (sort) {
+			URL = '/file?sort=' + sort
+		}
+		if (dirId && sort) {
+			URL = `/file?parent=${dirId}&sort=${sort}`
+		}
+		const { data } = await axiosInstance(URL)
 		dispatch(setFilesAC(data))
 	} catch (error) {
 		console.log(error.message)
+	} finally {
+		dispatch(hideLoader())
 	}
 }
 
@@ -70,4 +84,20 @@ const deleteFile = file => async dispatch => {
 	}
 }
 
-export { getFiles, createDir, uploadFile, downloadFile, deleteFile }
+const searchFile = search => async dispatch => {
+	try {
+		dispatch(showLoader())
+		if (search.trim()) {
+			const { data } = await axiosInstance.get(`/file/search?search=${search}`)
+			dispatch(setFilesAC(data))
+		} else {
+			dispatch(getFiles())
+		}
+	} catch (error) {
+		console.log(error.response.data)
+	} finally {
+		dispatch(hideLoader())
+	}
+}
+
+export { getFiles, createDir, uploadFile, downloadFile, deleteFile, searchFile }
