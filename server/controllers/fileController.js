@@ -13,12 +13,12 @@ class FileController {
 			const parentFile = await File.findOne({ _id: parent })
 			if (!parentFile) {
 				file.path = name
-				await fileService.createDir(file)
+				await fileService.createDir(req, file)
 			} else {
 				file.path = pathNode.join(`${parentFile.path}`, `${name}`)
 				parentFile.children.push(file._id)
 				await parentFile.save()
-				await fileService.createDir(file)
+				await fileService.createDir(req, file)
 			}
 			const createdFile = await file.save()
 			res.json(createdFile)
@@ -64,9 +64,9 @@ class FileController {
 			let path = null
 
 			if (parent) {
-				path = pathNode.join(`${process.env.FILE_PATH}`, `${user._id}`, `${parent.path}`, `${file.name}`)
+				path = pathNode.join(`${req.filePath}`, `${user._id}`, `${parent.path}`, `${file.name}`)
 			} else {
-				path = pathNode.join(`${process.env.FILE_PATH}`, `${user._id}`, `${file.name}`)
+				path = pathNode.join(`${req.filePath}`, `${user._id}`, `${file.name}`)
 			}
 
 			if (fs.existsSync(path)) {
@@ -86,7 +86,7 @@ class FileController {
 				size: file.size,
 				path: filePath,
 				user: user._id,
-				parent: parent?._id,
+				parent: parent ? parent._id : null,
 			})
 			await dbFile.save()
 			await user.save()
@@ -98,7 +98,7 @@ class FileController {
 	async downloadFile(req, res) {
 		try {
 			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
-			const path = fileService.getPath(file)
+			const path = fileService.getPath(req, file)
 			if (fs.existsSync(path)) {
 				return res.download(path, file.name)
 			}
@@ -113,7 +113,7 @@ class FileController {
 			if (!file) {
 				return res.status(500).json({ message: 'File was not founded' })
 			}
-			const response = await fileService.deleteFile(file)
+			const response = await fileService.deleteFile(req, file)
 			await file.remove()
 			res.json(response)
 		} catch (e) {

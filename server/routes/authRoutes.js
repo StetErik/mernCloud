@@ -22,13 +22,11 @@ router.post(
 			const { email, password } = req.body
 			const candidate = await User.findOne({ email })
 			if (candidate) {
-				return res
-					.status(401)
-					.json({ message: `User with email: ${email} already exists!` })
+				return res.status(401).json({ message: `User with email: ${email} already exists!` })
 			}
 			const hashPassword = await bcryptjs.hash(password, 8)
 			const user = await User.create({ email, password: hashPassword })
-			await fileService.createDir(new File({ user: user._id, name: '' }))
+			await fileService.createDir(req, new File({ user: user._id, name: '' }))
 			res.json({ message: 'User has been created' })
 		} catch (e) {
 			res.status(401).json(e.message)
