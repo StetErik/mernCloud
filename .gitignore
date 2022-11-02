@@ -1,5 +1,4 @@
-client/node_modules
-server/node_modules
-server/.env
-server/static
+**/node_modules
 **/.DS_Store
+**/.env
+server/static
