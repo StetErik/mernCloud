@@ -86,7 +86,6 @@ const deleteFile = file => async dispatch => {
 
 const searchFile = search => async dispatch => {
 	try {
-		dispatch(showLoader())
 		if (search.trim()) {
 			const { data } = await axiosInstance.get(`/file/search?search=${search}`)
 			dispatch(setFilesAC(data))

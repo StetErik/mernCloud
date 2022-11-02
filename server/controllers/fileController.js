@@ -3,6 +3,7 @@ const File = require('../models/fileModel')
 const User = require('../models/userModel')
 const fileService = require('../services/fileService')
 const pathNode = require('path')
+const uuid = require('uuid')
 
 class FileController {
 	async createDir(req, res) {
@@ -97,7 +98,7 @@ class FileController {
 	async downloadFile(req, res) {
 		try {
 			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
-			const path = pathNode.join(`${process.env.FILE_PATH}`, `${req.user.id}`, `${file.path}`, `${file.name}`)
+			const path = fileService.getPath(file)
 			if (fs.existsSync(path)) {
 				return res.download(path, file.name)
 			}
@@ -126,6 +127,33 @@ class FileController {
 			res.json(files.filter(file => file.name.includes(search)))
 		} catch (e) {
 			res.status(400).json(e.message)
+		}
+	}
+	async uploadAvatar(req, res) {
+		try {
+			const { file } = req.files
+			const user = await User.findById(req.user.id)
+			if (user.avatar) {
+				fs.unlinkSync(process.env.STATIC + '/' + user.avatar)
+			}
+			const avatarPath = uuid.v4() + '.' + file.name.split('.').pop()
+			file.mv(process.env.STATIC + '/' + avatarPath)
+			user.avatar = avatarPath
+			const userUpdated = await user.save()
+			res.json(userUpdated)
+		} catch (error) {
+			res.status(500).json(error.message)
+		}
+	}
+	async deleteAvatar(req, res) {
+		try {
+			const user = await User.findById(req.user.id)
+			fs.unlinkSync(process.env.STATIC + '/' + user.avatar)
+			user.avatar = null
+			const userUpdated = await user.save()
+			res.json(userUpdated)
+		} catch (error) {
+			res.status(500).json(error.message)
 		}
 	}
 }

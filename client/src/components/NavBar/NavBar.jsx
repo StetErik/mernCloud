@@ -4,15 +4,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logOut } from '../../actions/user'
 import { useState } from 'react'
 import { searchFile } from '../../actions/file'
+import { showLoader } from '../../reducers/appReducer'
+import avatarIcon from '../../assets/icons/avatar.svg'
 
 const logo = require('./../../assets/images/logo.png')
 
 function NavBar() {
-	const { isAuth } = useSelector(state => state.user)
+	const { isAuth, avatar } = useSelector(state => state.user)
 	const dispatch = useDispatch()
 	const [searchTimeout, setSearchTimeout] = useState(false)
 
 	const searchHandler = e => {
+		dispatch(showLoader())
 		if (!!searchTimeout) {
 			clearTimeout(searchTimeout)
 		}
@@ -60,6 +63,11 @@ function NavBar() {
 						)}
 					</ul>
 				</nav>
+				{isAuth && (
+					<Link to={'/profile'}>
+						<img className={s.img} src={avatar ? `http://localhost:3008/${avatar}` : avatarIcon} alt='avatar' />
+					</Link>
+				)}
 			</div>
 		</section>
 	)

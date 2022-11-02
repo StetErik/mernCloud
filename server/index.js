@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000
 const app = express()
 
 app.use(cors)
+app.use(express.static('static'))
 app.use(express.json())
 app.use(fileUpload({}))
 app.use('/auth', require('./routes/authRoutes'))

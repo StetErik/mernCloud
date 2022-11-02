@@ -10,5 +10,7 @@ router.get('', auth, fileController.getFiles)
 router.get('/download', auth, fileController.downloadFile)
 router.delete('', auth, fileController.deleteFile)
 router.get('/search', auth, fileController.searchFiles)
+router.post('/avatar', auth, fileController.uploadAvatar)
+router.delete('/avatar', auth, fileController.deleteAvatar)
 
 module.exports = router

@@ -6,9 +6,11 @@ import s from './Disk.module.sass'
 import arrowIcon from './../../assets/icons/arrow.svg'
 import FileList from '../FileList/FileList'
 import Popup from '../Popup/Popup'
-import { popStack, setPopupDisplay } from '../../reducers/fileReducer'
+import { popStack, setPopupDisplay, setView } from '../../reducers/fileReducer'
 import Uploader from '../Uploader/Uploader'
 import Loader from '../Loader'
+import listIcon from './../../assets/icons/list.svg'
+import plateIcon from './../../assets/icons/plate.svg'
 
 const Disk = () => {
 	const dispatch = useDispatch()
@@ -96,6 +98,14 @@ const Disk = () => {
 						<option value='date'>Date</option>
 						<option value='size'>Size</option>
 					</select>
+				</div>
+				<div className={s.views}>
+					<button className={[s.viewBtns, s.plateBtn].join(' ')} onClick={() => dispatch(setView('plate'))}>
+						<img src={plateIcon} alt='plateIcon' />
+					</button>
+					<button className={[s.viewBtns, s.listBtn].join(' ')} onClick={() => dispatch(setView('list'))}>
+						<img src={listIcon} alt='listIcon' />
+					</button>
 				</div>
 			</div>
 			<FileList />

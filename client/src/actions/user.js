@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { logOutAC, setUserAC } from '../reducers/userReducer'
 import axiosInstance from '../utils/axios'
 
@@ -43,4 +42,24 @@ const auth = () => async dispatch => {
 	}
 }
 
-export { registration, login, logOut, auth }
+const deleteAvatar = () => async dispatch => {
+	try {
+		const { data } = await axiosInstance.delete('/file/avatar')
+		dispatch(setUserAC(data))
+	} catch (error) {
+		console.log(error.response.data.message)
+	}
+}
+
+const uploadAvatar = file => async dispatch => {
+	try {
+		const formData = new FormData()
+		formData.append('file', file)
+		const { data } = await axiosInstance.post('/file/avatar', formData)
+		dispatch(setUserAC(data))
+	} catch (error) {
+		console.log(error.response.data.message)
+	}
+}
+
+export { registration, login, logOut, auth, deleteAvatar, uploadAvatar }
