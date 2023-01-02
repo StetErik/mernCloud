@@ -1,99 +1,87 @@
-import { hideLoader, showLoader } from '../reducers/appReducer'
-import { addFile, deleteFileAC, setFilesAC } from '../reducers/fileReducer'
-import { changeUploadFile, uploadFileShow, uploadShow } from '../reducers/uploadReducer'
+import * as uuid from 'uuid'
+import { hideLoader } from '../reducers/appReducer'
+import { addFile, fileDelete, setFiles } from '../reducers/fileReducer'
+import { changeFileProgress, uploadFileAC } from '../reducers/uploadReducer'
 import axiosInstance from '../utils/axios'
-
-let tempId = 0
 
 const getFiles = (dirId, sort) => async dispatch => {
 	try {
-		dispatch(showLoader())
-		let URL = '/file'
+		let URL = `file?sort=${sort}`
 		if (dirId) {
-			URL = '/file?parent=' + dirId
-		}
-		if (sort) {
-			URL = '/file?sort=' + sort
-		}
-		if (dirId && sort) {
-			URL = `/file?parent=${dirId}&sort=${sort}`
+			URL += `&parent=${dirId}`
 		}
 		const { data } = await axiosInstance(URL)
-		dispatch(setFilesAC(data))
+		dispatch(setFiles(data))
 	} catch (error) {
-		console.log(error.message)
+		console.log(error.response.data)
 	} finally {
 		dispatch(hideLoader())
 	}
 }
 
-const createDir = (dirId, name) => async dispatch => {
-	try {
-		const { data } = await axiosInstance.post('/file', { name, type: 'dir', parent: dirId })
-		dispatch(addFile(data))
-	} catch (e) {
-		console.log(e.response.data)
-	}
-}
-
-const uploadFile = (file, dirId) => async dispatch => {
-	try {
-		const formData = new FormData()
-		formData.append('file', file)
-		if (dirId) {
-			formData.append('parent', dirId)
+const createDir = (name, parent, type = 'dir') =>
+	new Promise(async resolve => {
+		try {
+			const { data } = await axiosInstance.post('file', { name, type, parent })
+			resolve(data)
+		} catch (error) {
+			console.log(error.response.data)
 		}
-		const uploaderFile = { name: file.name, progress: 0, id: ++tempId }
-		dispatch(uploadShow())
-		dispatch(uploadFileShow(uploaderFile))
-		const { data } = await axiosInstance.post('/file/upload', formData, {
-			onUploadProgress: progressEvent => {
-				let progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-				dispatch(changeUploadFile({ ...uploaderFile, progress }))
-			},
+	})
+
+const uploadFile = (file, parent) => async dispatch => {
+	try {
+		await axiosInstance(`file/existCheck?name=${file.name}${parent ? '&parent=' + parent : ''}`)
+		const id = uuid.v1()
+		dispatch(uploadFileAC({ id, name: file.name, progress: 0 }))
+		const formData = new FormData()
+		if (parent) formData.append('parent', parent)
+		formData.append('file', file)
+		const { data } = await axiosInstance.post('file/upload', formData, {
+			onUploadProgress: ({ loaded, total }) => dispatch(changeFileProgress(id, Math.round((loaded * 100) / total))),
 		})
 		dispatch(addFile(data))
-	} catch (e) {
-		console.log(e.response.data)
+	} catch (error) {
+		console.log(error.response.data.message)
 	}
 }
 
-const downloadFile = async file => {
+const downloadFile = async (path, name) => {
 	try {
-		const response = await axiosInstance(`/file/download?id=${file._id}`, { responseType: 'blob' })
+		const response = await axiosInstance(`file/download?path=${path}&name=${name}`, { responseType: 'blob' })
 		if (response.status === 200) {
 			const link = document.createElement('a')
 			link.href = window.URL.createObjectURL(response.data)
-			link.download = file.name
+			link.download = name
 			document.body.appendChild(link)
 			link.click()
 			link.remove()
 		}
 	} catch (error) {
-		console.log(error.message)
+		console.log(error.response.data.message)
 	}
 }
 
-const deleteFile = file => async dispatch => {
+const deleteFile = fileId => async dispatch => {
 	try {
-		const { data } = await axiosInstance.delete(`/file?id=${file._id}`)
-		dispatch(deleteFileAC(file._id))
-		console.log(data.message)
+		await axiosInstance.delete(`file/delete?fileId=${fileId}`)
+		dispatch(fileDelete(fileId))
 	} catch (error) {
-		console.log(error.response.data)
+		console.log(error.response.data.message)
 	}
 }
 
-const searchFile = search => async dispatch => {
+const searchFile = searchValue => async dispatch => {
 	try {
-		if (search.trim()) {
-			const { data } = await axiosInstance.get(`/file/search?search=${search}`)
-			dispatch(setFilesAC(data))
+		if (searchValue.trim() === '') {
+			const { data } = await axiosInstance('file?sort=type')
+			dispatch(setFiles(data))
 		} else {
-			dispatch(getFiles())
+			const { data } = await axiosInstance(`file/search?search=${searchValue}`)
+			dispatch(setFiles(data))
 		}
 	} catch (error) {
-		console.log(error.response.data)
+		console.log(error.response.data.message)
 	} finally {
 		dispatch(hideLoader())
 	}

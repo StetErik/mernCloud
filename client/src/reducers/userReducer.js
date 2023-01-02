@@ -1,28 +1,21 @@
 const SET_USER = 'SET_USER'
-const LOG_OUT = 'LOG_OUt'
+const LOG_OUT = 'LOG_OUT'
 
-const defaultState = {
-	isAuth: false,
-	avatar: null,
-}
+const defaultState = { isAuth: false, currentUser: {} }
 
-const userReducer = (state = defaultState, action) => {
-	switch (action.type) {
+const userReducer = (state = defaultState, { type, payload }) => {
+	switch (type) {
 		case SET_USER:
-			return {
-				...action.payload,
-				isAuth: true,
-			}
+			return { ...state, isAuth: true, currentUser: payload }
 		case LOG_OUT:
-			return {
-				isAuth: false,
-			}
+			localStorage.removeItem('token')
+			return { ...state, isAuth: false, currentUser: {} }
 		default:
-			return state
+			return { ...state }
 	}
 }
 
-const setUserAC = user => ({ type: SET_USER, payload: user })
-const logOutAC = () => ({ type: LOG_OUT })
+const setUser = userPayload => ({ type: SET_USER, payload: userPayload })
+const logOut = () => ({ type: LOG_OUT })
 
-export { userReducer as default, setUserAC, logOutAC }
+export { userReducer as default, setUser, logOut }

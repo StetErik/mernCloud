@@ -1,7 +1,8 @@
 @import './../../utils/colors.sass'
 
 .wrapper
-	padding: 15px 50px
+	padding: 15px
+	min-height: calc( 100vh - 61px )
 .title
 	color: $base-color
 	text-align: center
@@ -48,9 +49,8 @@
 .drag
 	border: 2px dashed $base-color
 	color: $base-color
-	width: calc( 100% - 40px )
-	height: calc( 100vh - 90px)
-	margin: 20px
+	width: calc( 100% - 0px )
+	height: calc( 100vh - 91px)
 	font-size: 62px
 	text-align: center
 	font-weight: bold
@@ -62,7 +62,7 @@
 	display: flex
 	align-items: center
 	justify-content: center
-	height: 50vh
+	height: calc( 100vh - 61px )
 .views
 	button
 		border: none

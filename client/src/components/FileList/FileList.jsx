@@ -1,19 +1,29 @@
-import { useSelector } from 'react-redux'
-import File from '../File/File'
-import s from './FileList.module.sass'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
+import { getFiles } from '../../actions/file'
+import { showLoader } from '../../reducers/appReducer'
+import File from '../File/File'
+import Loader from '../Loader'
+import s from './FileList.module.sass'
 
 const FileList = () => {
-	const { files, view } = useSelector(state => state.file)
+	const { files, currentDir, sort, view } = useSelector(state => state.file)
+	const { isLoaderVisible } = useSelector(state => state.app)
+	const dispatch = useDispatch()
 
-	if (!files.length) {
+	useEffect(() => {
+		dispatch(showLoader())
+		dispatch(getFiles(currentDir, sort))
+	}, [currentDir, sort])
+
+	if (isLoaderVisible) {
 		return (
 			<div className={s.loader}>
-				<h2>Files weren't found</h2>
+				<Loader />
 			</div>
 		)
 	}
-
 	if (view === 'list') {
 		return (
 			<section className={s.wrapper}>
@@ -25,7 +35,7 @@ const FileList = () => {
 				</div>
 				<TransitionGroup className={s.files}>
 					{files.map(file => (
-						<CSSTransition key={file._id} timeout={300} classNames={'file'}>
+						<CSSTransition key={file._id} timeout={300} classNames={'file'} exit={false}>
 							<File file={file} />
 						</CSSTransition>
 					))}

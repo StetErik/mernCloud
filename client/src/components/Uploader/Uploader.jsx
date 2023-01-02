@@ -1,13 +1,13 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { uploadHide } from '../../reducers/uploadReducer'
-import UploaderFile from '../UploaderFile/UploaderFile'
+import { hideUploader } from '../../reducers/uploadReducer'
+import UploaderFile from '../UploaderFile'
 import s from './Uploader.module.sass'
 
 const Uploader = () => {
-	const { files } = useSelector(state => state.upload)
 	const dispatch = useDispatch()
+	const { files } = useSelector(state => state.upload)
 	const closeClickHandler = () => {
-		dispatch(uploadHide())
+		dispatch(hideUploader())
 	}
 
 	return (

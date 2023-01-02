@@ -1,72 +1,68 @@
 import { Link, NavLink } from 'react-router-dom'
-import s from './NavBar.module.sass'
-import { useDispatch, useSelector } from 'react-redux'
-import { logOut } from '../../actions/user'
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
 import { searchFile } from '../../actions/file'
 import { showLoader } from '../../reducers/appReducer'
-import avatarIcon from '../../assets/icons/avatar.svg'
+import { logOut } from '../../reducers/userReducer'
+import { resetStack } from '../../reducers/fileReducer'
 
-const logo = require('./../../assets/images/logo.png')
+import s from './NavBar.module.sass'
+import avatarIcon from '../../assets/icons/avatar.svg'
+import searchIcon from '../../assets/icons/search.svg'
 
 function NavBar() {
-	const { isAuth, avatar } = useSelector(state => state.user)
-	const dispatch = useDispatch()
+	const { isAuth, currentUser } = useSelector(state => state.user)
 	const [searchTimeout, setSearchTimeout] = useState(false)
+	const [searchValue, setSearchValue] = useState('')
+	const { avatar } = currentUser
+	const dispatch = useDispatch()
 
-	const searchHandler = e => {
+	function dispatchSearch(value = '') {
 		dispatch(showLoader())
-		if (!!searchTimeout) {
-			clearTimeout(searchTimeout)
-		}
+		dispatch(resetStack())
+		dispatch(searchFile(value))
+	}
+	function searchHandler(e) {
+		setSearchValue(e.target.value)
+		clearTimeout(searchTimeout)
 		setSearchTimeout(
 			setTimeout(() => {
-				dispatch(searchFile(e.target.value))
-			}, 300)
+				dispatchSearch(e.target.value)
+			}, 500)
 		)
+	}
+	function resetSearch() {
+		setSearchValue('')
+		dispatchSearch()
 	}
 
 	return (
 		<section className={s.wrapper}>
 			<div className={s.content}>
 				<div className={s.logo}>
-					<img className={s.img} src={logo} alt='logo' />
 					<h1 className={s.title}>
-						<Link to={'/auth'}>MERN CLOUD</Link>
+						<Link to={'/auth'}>Cloud</Link>
 					</h1>
 				</div>
-				{isAuth && (
-					<div className={s.search}>
-						<input onChange={searchHandler} type='text' name='search' />
+				{!isAuth ? (
+					<NavLink className={s.link} to={'/auth/registration'}>
+						Sign Up
+					</NavLink>
+				) : (
+					<div className={s.bottom}>
+						<label className={[s.search, searchValue.length ? s.active : ''].join(' ')}>
+							<img src={searchIcon} alt='searchIcon' />
+							<input value={searchValue} placeholder='Search...' onChange={searchHandler} type='text' name='search' />
+							{searchValue.length ? <span onClick={resetSearch}>&times;</span> : null}
+						</label>
+						<Link to={'/profile'}>
+							<img className={s.img} src={avatar ? `http://localhost:3030/${avatar}` : avatarIcon} alt='avatar' />
+						</Link>
+						<button className={s.link} onClick={() => dispatch(logOut())}>
+							Sign Out
+						</button>
 					</div>
-				)}
-				<nav>
-					<ul className={s.list}>
-						{!isAuth && (
-							<li>
-								<NavLink className={s.link} to={'/auth/login'}>
-									Login
-								</NavLink>
-							</li>
-						)}
-						{!isAuth && (
-							<li>
-								<NavLink className={s.link} to={'/auth/registration'}>
-									Registration
-								</NavLink>
-							</li>
-						)}
-						{isAuth && (
-							<li className={s.link} onClick={() => dispatch(logOut())}>
-								Sign Out
-							</li>
-						)}
-					</ul>
-				</nav>
-				{isAuth && (
-					<Link to={'/profile'}>
-						<img className={s.img} src={avatar ? `http://localhost:3008/${avatar}` : avatarIcon} alt='avatar' />
-					</Link>
 				)}
 			</div>
 		</section>

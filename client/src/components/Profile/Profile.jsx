@@ -6,10 +6,11 @@ const Profile = () => {
 	const dispatch = useDispatch()
 
 	const uploadFileHandler = e => {
-		e.preventDefault()
-		e.stopPropagation()
-		const file = e.target.files[0]
-		dispatch(uploadAvatar(file))
+		dispatch(uploadAvatar(e.target.files[0]))
+	}
+
+	const deleteAvatarHandler = () => {
+		dispatch(deleteAvatar())
 	}
 
 	return (
@@ -18,7 +19,7 @@ const Profile = () => {
 				<input onChange={uploadFileHandler} type='file' accept='image/*' />
 				<span>Update Avatar</span>
 			</label>
-			<button onClick={() => dispatch(deleteAvatar())}>Delete Avatar</button>
+			<button onClick={deleteAvatarHandler}>Delete Avatar</button>
 		</section>
 	)
 }

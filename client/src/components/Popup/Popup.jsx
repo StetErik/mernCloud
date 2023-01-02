@@ -1,43 +1,41 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createDir } from '../../actions/file'
-import { setPopupDisplay } from '../../reducers/fileReducer'
+import { togglePopup } from '../../reducers/appReducer'
+import { addFile } from '../../reducers/fileReducer'
 import s from './Popup.module.sass'
 
 const Popup = () => {
 	const dispatch = useDispatch()
-	const { popupDisplay, currentDir } = useSelector(state => state.file)
-	const [dirName, setDirName] = useState('')
+	const { currentDir } = useSelector(state => state.file)
+	const [folderName, setFolderName] = useState('')
 
-	const handlePopupDisplay = () => {
-		dispatch(setPopupDisplay('none'))
+	const closePopupHandler = e => {
+		dispatch(togglePopup())
 	}
-
-	const createDirHandle = async () => {
-		dispatch(createDir(currentDir, dirName))
-		setDirName('')
+	const inputChangeHandler = e => {
+		setFolderName(e.target.value)
+	}
+	const createBtnHandler = () => {
+		createDir(folderName, currentDir).then(({ message, createdFolder }) => {
+			setFolderName('')
+			dispatch(togglePopup())
+			dispatch(addFile(createdFolder))
+			console.log(message)
+		})
 	}
 
 	return (
-		<section
-			className={s.wrapper}
-			style={{ display: popupDisplay }}
-			onClick={handlePopupDisplay}
-		>
+		<section className={s.wrapper} onClick={closePopupHandler}>
 			<div className={s.content} onClick={e => e.stopPropagation()}>
 				<div className={s.header}>
 					<div className={s.title}>Create File</div>
-					<button className={s.closeBtn} onClick={handlePopupDisplay}>
+					<button className={s.closeBtn} onClick={closePopupHandler}>
 						X
 					</button>
 				</div>
-				<input
-					className={s.input}
-					placeholder='Enter file name...'
-					value={dirName}
-					onChange={e => setDirName(e.target.value)}
-				/>
-				<button className={s.createBtn} onClick={createDirHandle}>
+				<input onChange={inputChangeHandler} value={folderName} className={s.input} placeholder='Enter file name...' />
+				<button onClick={createBtnHandler} className={s.createBtn}>
 					Create
 				</button>
 			</div>

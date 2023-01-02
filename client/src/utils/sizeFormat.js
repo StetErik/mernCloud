@@ -1,12 +1,7 @@
-export default size => {
-	if (size > 1000 * 1000 * 1000) {
-		return (size / (1000 * 1000 * 1000)).toFixed(1) + ' Gb'
-	}
-	if (size > 1000 * 1000) {
-		return (size / (1000 * 1000)).toFixed(1) + ' Mb'
-	}
-	if (size > 1000) {
-		return (size / 1000).toFixed(1) + ' Kb'
-	}
-	return size + ' B'
+const sizeFormat = size => {
+	if (size > 1000 ** 3) return (size / 1000 ** 3).toFixed(2) + ' GB'
+	if (size > 1000 ** 2) return (size / 1000 ** 2).toFixed(1) + ' MB'
+	if (size > 1000 ** 1) return Math.ceil(size / 1000 ** 1) + ' KB'
+	return size + 'B'
 }
+export default sizeFormat

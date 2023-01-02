@@ -1,11 +1,11 @@
 import { useDispatch } from 'react-redux'
-import { uploadFileHide } from '../../reducers/uploadReducer'
+import { hideFile } from '../../reducers/uploadReducer'
 import s from './UploaderFile.module.sass'
 
 const UploaderFile = ({ file }) => {
 	const dispatch = useDispatch()
 	const closeBtnHandler = () => {
-		dispatch(uploadFileHide(file.id))
+		dispatch(hideFile(file.id))
 	}
 
 	return (

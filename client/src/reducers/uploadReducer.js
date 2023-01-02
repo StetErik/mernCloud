@@ -1,45 +1,42 @@
-const UPLOAD_SHOW = 'UPLOAD_SHOW'
-const UPLOAD_HIDE = 'UPLOAD_HIDE'
-const UPLOAD_FILE_SHOW = 'UPLOAD_FILE_SHOW'
-const UPLOAD_FILE_HIDE = 'UPLOAD_FILE_HIDE'
-const CHANGE_UPLOAD_FILE = 'CHANGE_UPLOAD_FILE'
+const UPLOADER_SHOW = 'UPLOADER_SHOW'
+const UPLOADER_HIDE = 'UPLOADER_HIDE'
+const UPLOAD_FILE = 'UPLOAD_FILE'
+const HIDE_FILE = 'HIDE_FILE'
+const CHANGE_FILE_PROGRESS = 'CHANGE_FILE_PROGRESS'
 
 const defaultState = {
 	isUploaderVisible: false,
 	files: [],
 }
 
-const uploadReducer = (state = defaultState, action) => {
-	switch (action.type) {
-		case UPLOAD_SHOW:
+const uploadReducer = (state = defaultState, { type, payload }) => {
+	switch (type) {
+		case UPLOADER_SHOW:
 			return { ...state, isUploaderVisible: true }
-		case UPLOAD_HIDE:
-			return { ...state, isUploaderVisible: false }
-		case UPLOAD_FILE_SHOW:
+		case UPLOADER_HIDE:
+			return { ...state, isUploaderVisible: false, files: [] }
+		case UPLOAD_FILE:
+			return { ...state, isUploaderVisible: true, files: [...state.files, payload] }
+		case HIDE_FILE:
 			return {
 				...state,
-				files: [...state.files, action.payload],
+				isUploaderVisible: !!(state.files.length - 1),
+				files: state.files.filter(file => file.id !== payload),
 			}
-		case UPLOAD_FILE_HIDE:
+		case CHANGE_FILE_PROGRESS:
 			return {
 				...state,
-				files: state.files.filter(file => file.id !== action.payload),
-				isUploaderVisible: !!--state.files.length,
-			}
-		case CHANGE_UPLOAD_FILE:
-			return {
-				...state,
-				files: state.files.map(file => (file.id === action.payload.id ? action.payload : file)),
+				files: state.files.map(file => (file.id === payload.fileId ? { ...file, progress: payload.progress } : file)),
 			}
 		default:
-			return state
+			return { ...state }
 	}
 }
 
-const uploadShow = () => ({ type: UPLOAD_SHOW })
-const uploadHide = () => ({ type: UPLOAD_HIDE })
-const uploadFileShow = file => ({ type: UPLOAD_FILE_SHOW, payload: file })
-const uploadFileHide = fileId => ({ type: UPLOAD_FILE_HIDE, payload: fileId })
-const changeUploadFile = payload => ({ type: CHANGE_UPLOAD_FILE, payload })
+const showUploader = () => ({ type: UPLOADER_SHOW })
+const hideUploader = () => ({ type: UPLOADER_HIDE })
+const uploadFileAC = file => ({ type: UPLOAD_FILE, payload: file })
+const hideFile = fileId => ({ type: HIDE_FILE, payload: fileId })
+const changeFileProgress = (fileId, progress) => ({ type: CHANGE_FILE_PROGRESS, payload: { fileId, progress } })
 
-export { uploadReducer as default, uploadShow, uploadHide, uploadFileShow, uploadFileHide, changeUploadFile }
+export { uploadReducer as default, showUploader, hideUploader, uploadFileAC, hideFile, changeFileProgress }
