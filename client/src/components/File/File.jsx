@@ -17,16 +17,29 @@ const File = ({ file }) => {
 		}
 	}
 	const downloadClickHandler = () => {
-		downloadFile(file.path, file.name)
+		downloadFile(file._id, file.name)
 	}
 	const deleteFileHandler = () => {
 		dispatch(deleteFile(file._id))
+	}
+	const nameCutter = name => {
+		if (name.length <= 14) return name
+		let nameArr = name.split('')
+		nameArr.length = 11
+		return nameArr.join('') + '...'
 	}
 
 	if (view === 'list') {
 		return (
 			<li className={s.item}>
-				<img onClick={openDirHandler} className={s.img} src={file.type === 'dir' ? folderIcon : fileIcon} alt='icon' />
+				<div className={s.img}>
+					<img
+						draggable='false'
+						onClick={openDirHandler}
+						src={file.type === 'dir' ? folderIcon : fileIcon}
+						alt='icon'
+					/>
+				</div>
 				<h6 onClick={openDirHandler} className={s.name}>
 					{file.name}
 				</h6>
@@ -38,8 +51,8 @@ const File = ({ file }) => {
 				<button className={s.delete} onClick={deleteFileHandler}>
 					Delete
 				</button>
-				<span className={s.date}>{file.date.slice(0, 10)}</span>
 				<span className={s.size}>{file.type !== 'dir' ? sizeFormat(file.size) : ''}</span>
+				<span className={s.date}>{file.date.slice(0, 10)}</span>
 			</li>
 		)
 	}
@@ -47,11 +60,26 @@ const File = ({ file }) => {
 	if (view === 'plate') {
 		return (
 			<li className={s.plate}>
-				<img className={s.plate__img} src={file.type === 'dir' ? folderIcon : fileIcon} alt='icon' />
-				<h6 className={s.plate__name}>{file.name}</h6>
+				<div className={s.plate__img}>
+					<img
+						onClick={openDirHandler}
+						draggable='false'
+						src={file.type === 'dir' ? folderIcon : fileIcon}
+						alt='icon'
+					/>
+				</div>
+				<h6 onClick={openDirHandler} className={s.plate__name}>
+					{nameCutter(file.name)}
+				</h6>
 				<div className={s.plate__btns}>
-					{file.type !== 'dir' && <button className={s.plate__download}>Download</button>}
-					<button className={s.plate__delete}>Delete</button>
+					{file.type !== 'dir' && (
+						<button className={s.plate__download} onClick={downloadClickHandler}>
+							Download
+						</button>
+					)}
+					<button className={s.plate__delete} onClick={deleteFileHandler}>
+						Delete
+					</button>
 				</div>
 			</li>
 		)

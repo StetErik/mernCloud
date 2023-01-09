@@ -1,6 +1,5 @@
+import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { useState } from 'react'
-import { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import Input from '../Input'
@@ -9,18 +8,19 @@ import s from './Authorization.module.sass'
 
 const Authorization = () => {
 	const dispatch = useDispatch()
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
+	const navigate = useNavigate()
+	const { pathname } = useLocation()
+
+	const [isLogin, setLogin] = useState(true)
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
-	const { pathname } = useLocation()
-	const [isLogin, setLogin] = useState(true)
-	const navigate = useNavigate()
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
 
-	useEffect(() => (pathname.includes('login') ? setLogin(true) : setLogin(false)), [pathname])
+	useEffect(() => setLogin(pathname.includes('login')), [pathname])
 
 	const btnHandler = () => {
-		dispatch(authPost(email, password, isLogin ? 'login' : 'registration', navigate))
+		dispatch(authPost(firstName, lastName, email, password, isLogin ? 'login' : 'registration', navigate))
 	}
 
 	return (

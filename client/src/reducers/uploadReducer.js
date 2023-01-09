@@ -6,7 +6,7 @@ const CHANGE_FILE_PROGRESS = 'CHANGE_FILE_PROGRESS'
 
 const defaultState = {
 	isUploaderVisible: false,
-	files: [],
+	files: []
 }
 
 const uploadReducer = (state = defaultState, { type, payload }) => {
@@ -21,12 +21,12 @@ const uploadReducer = (state = defaultState, { type, payload }) => {
 			return {
 				...state,
 				isUploaderVisible: !!(state.files.length - 1),
-				files: state.files.filter(file => file.id !== payload),
+				files: state.files.filter(file => file.id !== payload)
 			}
 		case CHANGE_FILE_PROGRESS:
 			return {
 				...state,
-				files: state.files.map(file => (file.id === payload.fileId ? { ...file, progress: payload.progress } : file)),
+				files: state.files.map(file => (file.id === payload.fileId ? { ...file, progress: payload.progress } : file))
 			}
 		default:
 			return { ...state }
@@ -35,8 +35,8 @@ const uploadReducer = (state = defaultState, { type, payload }) => {
 
 const showUploader = () => ({ type: UPLOADER_SHOW })
 const hideUploader = () => ({ type: UPLOADER_HIDE })
-const uploadFileAC = file => ({ type: UPLOAD_FILE, payload: file })
+const uploadFile = file => ({ type: UPLOAD_FILE, payload: file })
 const hideFile = fileId => ({ type: HIDE_FILE, payload: fileId })
 const changeFileProgress = (fileId, progress) => ({ type: CHANGE_FILE_PROGRESS, payload: { fileId, progress } })
 
-export { uploadReducer as default, showUploader, hideUploader, uploadFileAC, hideFile, changeFileProgress }
+export { uploadReducer as default, showUploader, hideUploader, uploadFile, hideFile, changeFileProgress }

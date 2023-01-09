@@ -1,14 +1,15 @@
 import { setUser } from '../reducers/userReducer'
-import axiosInstance from './../utils/axios'
+import axiosInstance from '../utils/axios'
 
-const authPost = (email, password, path, navigate) => async dispatch => {
+const authPost = (firstName, lastName, email, password, path, navigate) => async dispatch => {
 	try {
-		const { data } = await axiosInstance.post('/auth/' + path, { email, password })
+		const { data } = await axiosInstance.post('/auth/' + path, { firstName, lastName, email, password })
 		localStorage.setItem('token', data.token)
 		dispatch(setUser(data.user))
 		navigate('/file')
+		if (path == 'registration') alert('Registration completed successfully')
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 
@@ -21,28 +22,31 @@ const auth = () => async dispatch => {
 		localStorage.setItem('token', data.token)
 		dispatch(setUser(data.user))
 	} catch (error) {
-		console.log(error.message || error.response.data.message)
 		localStorage.removeItem('token')
 	}
 }
 
 const uploadAvatar = file => async dispatch => {
 	try {
-		const formData = new FormData()
-		formData.append('avatar', file)
-		const { data } = await axiosInstance.post('/file/avatar', formData)
-		dispatch(setUser(data))
+		if (file.size < 2000001) {
+			const formData = new FormData()
+			formData.append('file', file)
+			const { data } = await axiosInstance.post('/file/avatar', formData)
+			dispatch(setUser(data))
+		} else alert('Picture size must be less than 2mb')
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 
-const deleteAvatar = () => async dispatch => {
+const deleteAvatar = avatar => async dispatch => {
 	try {
-		const { data } = await axiosInstance.delete('/file/avatar')
-		dispatch(setUser(data))
+		if (avatar) {
+			const { data } = await axiosInstance.delete('/file/avatar')
+			dispatch(setUser(data))
+		}
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 

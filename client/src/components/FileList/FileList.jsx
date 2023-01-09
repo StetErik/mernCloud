@@ -30,8 +30,8 @@ const FileList = () => {
 				<div className={s.info}>
 					<span className={s.icon}></span>
 					<span className={s.name}>Name</span>
-					<span className={s.date}>Date</span>
 					<span className={s.size}>Size</span>
+					<span className={s.date}>Date</span>
 				</div>
 				<TransitionGroup className={s.files}>
 					{files.map(file => (

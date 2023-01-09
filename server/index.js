@@ -20,12 +20,11 @@ app.use('/file', require('./routes/fileRoutes'))
 const start = async () => {
 	try {
 		await mongoose.connect(process.env.DB_URL)
-		console.log('DB was connected')
-		await app.listen(PORT)
+		app.listen(PORT)
 		console.log('Server is running on PORT: ' + PORT)
 	} catch (e) {
 		console.log(e.message)
 	}
 }
 
-start().then(() => console.log('Server has been created'))
+start()

@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { auth } from '../../actions/user'
-import Disk from '../Disk/Disk'
+import About from '../About'
+import Disk from '../Disk'
 import NavBar from '../NavBar'
 import Profile from '../Profile'
 import Authorization from './../Authorization'
-import './App.css'
+import './App.sass'
 
 const App = () => {
 	const { isAuth } = useSelector(state => state.user)
@@ -25,6 +26,7 @@ const App = () => {
 					<Routes>
 						<Route path='/auth/login' element={<Authorization />} />
 						<Route path='/auth/registration' element={<Authorization />} />
+						<Route path='/about' element={<About />} />
 						<Route path='*' element={<Authorization />} />
 					</Routes>
 				) : (

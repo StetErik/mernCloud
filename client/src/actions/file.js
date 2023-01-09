@@ -1,7 +1,7 @@
 import * as uuid from 'uuid'
 import { hideLoader } from '../reducers/appReducer'
 import { addFile, fileDelete, setFiles } from '../reducers/fileReducer'
-import { changeFileProgress, uploadFileAC } from '../reducers/uploadReducer'
+import { changeFileProgress, uploadFile as uploadFileAC } from '../reducers/uploadReducer'
 import axiosInstance from '../utils/axios'
 
 const getFiles = (dirId, sort) => async dispatch => {
@@ -13,7 +13,7 @@ const getFiles = (dirId, sort) => async dispatch => {
 		const { data } = await axiosInstance(URL)
 		dispatch(setFiles(data))
 	} catch (error) {
-		console.log(error.response.data)
+		alert(error.response.data)
 	} finally {
 		dispatch(hideLoader())
 	}
@@ -25,49 +25,55 @@ const createDir = (name, parent, type = 'dir') =>
 			const { data } = await axiosInstance.post('file', { name, type, parent })
 			resolve(data)
 		} catch (error) {
-			console.log(error.response.data)
+			alert(error.response.data)
 		}
 	})
 
 const uploadFile = (file, parent) => async dispatch => {
 	try {
-		await axiosInstance(`file/existCheck?name=${file.name}${parent ? '&parent=' + parent : ''}`)
+		const { data: exists } = await axiosInstance(
+			`file/existCheck?name=${file.name}${parent ? '&parent=' + parent : ''}`
+		)
+		if (exists) {
+			return alert('File already exists')
+		}
 		const id = uuid.v1()
 		dispatch(uploadFileAC({ id, name: file.name, progress: 0 }))
 		const formData = new FormData()
 		if (parent) formData.append('parent', parent)
 		formData.append('file', file)
 		const { data } = await axiosInstance.post('file/upload', formData, {
-			onUploadProgress: ({ loaded, total }) => dispatch(changeFileProgress(id, Math.round((loaded * 100) / total))),
+			onUploadProgress: ({ loaded, total }) => dispatch(changeFileProgress(id, Math.round((loaded * 100) / total)))
 		})
 		dispatch(addFile(data))
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 
-const downloadFile = async (path, name) => {
+const downloadFile = async (id, name) => {
 	try {
-		const response = await axiosInstance(`file/download?path=${path}&name=${name}`, { responseType: 'blob' })
-		if (response.status === 200) {
+		const { status, data } = await axiosInstance(`file/download?id=${id}`, { responseType: 'blob' })
+		if (status === 200) {
 			const link = document.createElement('a')
-			link.href = window.URL.createObjectURL(response.data)
+			link.href = window.URL.createObjectURL(data)
+			console.log(data)
 			link.download = name
 			document.body.appendChild(link)
 			link.click()
 			link.remove()
 		}
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 
 const deleteFile = fileId => async dispatch => {
 	try {
-		await axiosInstance.delete(`file/delete?fileId=${fileId}`)
+		await axiosInstance.delete(`file?id=${fileId}`)
 		dispatch(fileDelete(fileId))
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	}
 }
 
@@ -81,7 +87,7 @@ const searchFile = searchValue => async dispatch => {
 			dispatch(setFiles(data))
 		}
 	} catch (error) {
-		console.log(error.response.data.message)
+		alert(error.response.data)
 	} finally {
 		dispatch(hideLoader())
 	}

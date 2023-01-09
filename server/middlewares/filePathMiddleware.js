@@ -1,6 +1,6 @@
 const filePathMiddleware = path => {
 	return (req, res, next) => {
-		req.filePath = path
+		req.globalFilePath = path
 		next()
 	}
 }

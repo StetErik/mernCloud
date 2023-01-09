@@ -18,6 +18,8 @@
 	padding: 0 10px
 	max-width: 100%
 	cursor: pointer
+	img
+		max-width: 100%
 .name
 	flex: 1 0 auto
 	text-align: left
@@ -51,31 +53,37 @@
 	transition: .2s
 	flex-direction: column
 	align-items: center
-	flex: 0 0 20%
+	justify-content: center
+	flex: 0 0 12.5%
+	overflow-x: hidden
+	padding: 3px 6px
 	&:hover
 		cursor: pointer
 		transform: scale(1.01)
 		.plate__btns
-			display: flex
+			visibility: visible
+			opacity: 1
 	&__img
-		width: 190px
-		height: 190px
+		width: 90px
+		height: 90px
 		object-fit: contain
 		margin-bottom: 10px
+		img
+			max-width: 100%
 	&__name
 		font-size: 18px
 		line-height: 21px
 		margin-bottom: 5px
+		white-space: nowrap
 	&__btns
-		display: none
-		gap: 8px
+		display: flex
+		gap: 4px
+		visibility: hidden
+		opacity: 0
 		button
-			background: none
 			border: 2px solid #444
 			border-radius: 10px
-			padding: 3px 8px
+			padding: 3px 6px
 	&__download
-		flex: 0 0 50%
 
 	&__delete
-		flex: 0 0 50%

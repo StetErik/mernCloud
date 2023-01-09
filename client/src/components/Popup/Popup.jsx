@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+
 import { createDir } from '../../actions/file'
 import { togglePopup } from '../../reducers/appReducer'
 import { addFile } from '../../reducers/fileReducer'
+
 import s from './Popup.module.sass'
 
 const Popup = () => {
@@ -17,11 +19,10 @@ const Popup = () => {
 		setFolderName(e.target.value)
 	}
 	const createBtnHandler = () => {
-		createDir(folderName, currentDir).then(({ message, createdFolder }) => {
+		createDir(folderName, currentDir).then(data => {
 			setFolderName('')
 			dispatch(togglePopup())
-			dispatch(addFile(createdFolder))
-			console.log(message)
+			dispatch(addFile(data))
 		})
 	}
 
@@ -29,15 +30,22 @@ const Popup = () => {
 		<section className={s.wrapper} onClick={closePopupHandler}>
 			<div className={s.content} onClick={e => e.stopPropagation()}>
 				<div className={s.header}>
-					<div className={s.title}>Create File</div>
+					<div className={s.title}>Create Folder</div>
 					<button className={s.closeBtn} onClick={closePopupHandler}>
-						X
+						&times;
 					</button>
 				</div>
-				<input onChange={inputChangeHandler} value={folderName} className={s.input} placeholder='Enter file name...' />
-				<button onClick={createBtnHandler} className={s.createBtn}>
-					Create
-				</button>
+				<div className={s.middle}>
+					<input
+						onChange={inputChangeHandler}
+						value={folderName}
+						className={s.input}
+						placeholder='Enter folder name...'
+					/>
+					<button onClick={createBtnHandler} className={s.createBtn}>
+						Create
+					</button>
+				</div>
 			</div>
 		</section>
 	)

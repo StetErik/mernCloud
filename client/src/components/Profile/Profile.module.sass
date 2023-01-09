@@ -1,0 +1,55 @@
+.wrapper
+.title
+	text-align: center
+	font-size: 40px
+	font-weight: 600
+	margin-bottom: 50px
+.avatar
+	position: relative
+	width: 200px
+	height: 200px
+	overflow: hidden
+	&::after
+		content: ''
+		width: 100%
+		height: 2px
+		background: #fff
+		left: 0
+		top: 50%
+		transform: translateY(-50%)
+		position: absolute
+		display: none
+	&:hover
+		.updateImg,
+		.deleteImg,
+		&::after
+			display: block
+.img
+	position: absolute
+	width: 100%
+	height: 100%
+	object-fit: cover
+.imgDefault
+	padding: 10px
+.updateImg
+	display: none
+	input
+		display: none
+.updateImg span,
+.deleteImg
+	overflow: hidden
+	position: absolute
+	left: 0
+	width: 100%
+	height: 50%
+	background: #00000090
+	display: flex
+	justify-content: center
+	align-items: center
+	color: #fff
+	cursor: pointer
+	font-size: 20px
+	font-weight: 500
+.deleteImg
+	display: none
+	bottom: 0

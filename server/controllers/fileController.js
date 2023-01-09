@@ -1,29 +1,33 @@
 const fs = require('fs')
+const uuid = require('uuid')
+const { join, resolve } = require('path')
+
 const File = require('../models/fileModel')
 const User = require('../models/userModel')
 const fileService = require('../services/fileService')
-const pathNode = require('path')
-const uuid = require('uuid')
 
 class FileController {
 	async createDir(req, res) {
 		try {
 			const { name, type, parent } = req.body
-			const file = new File({ name, type, parent, user: req.user.id })
+			const user = await User.findById(req.user.id)
+			const file = new File({ name, type, parent, user: user._id })
 			const parentFile = await File.findOne({ _id: parent })
 			if (!parentFile) {
-				file.path = name
-				await fileService.createDir(req, file)
+				file.path = ''
+				await fileService.createDir(req.globalFilePath, file)
 			} else {
-				file.path = pathNode.join(`${parentFile.path}`, `${name}`)
+				file.path = join(`${parentFile.path}`, `${parentFile.name}`)
 				parentFile.children.push(file._id)
 				await parentFile.save()
-				await fileService.createDir(req, file)
+				await fileService.createDir(req.globalFilePath, file)
 			}
+			user.files.push(file._id)
+			await user.save()
 			const createdFile = await file.save()
 			res.json(createdFile)
 		} catch (error) {
-			res.status(400).json(error.message)
+			res.status(400).json(error)
 		}
 	}
 	async getFiles(req, res) {
@@ -32,7 +36,7 @@ class FileController {
 			let files
 			switch (sort) {
 				case 'name':
-					files = await File.find({ parent, user: req.user.id }).sort({ name: -1 })
+					files = await File.find({ parent, user: req.user.id }).sort({ name: 1 })
 					break
 				case 'type':
 					files = await File.find({ parent, user: req.user.id }).sort({ type: 1 })
@@ -51,6 +55,15 @@ class FileController {
 			res.status(500).json({ message: error.message })
 		}
 	}
+	async existCheck(req, res) {
+		try {
+			const { name, parent } = req.query
+			const file = await File.findOne({ name, parent: parent || null })
+			res.json(!!file)
+		} catch (error) {
+			res.status(500).json(error.message)
+		}
+	}
 	async uploadFile(req, res) {
 		try {
 			const { file } = req.files
@@ -58,36 +71,36 @@ class FileController {
 			const user = await User.findOne({ _id: req.user.id })
 
 			if (user.usedSpace + file.size > user.diskSpace) {
-				return res.status(500).json({ message: 'Not enough disk space' })
+				return res.status(500).json('Not enough disk space')
 			}
 			user.usedSpace += file.size
 			let path = null
 
 			if (parent) {
-				path = pathNode.join(`${req.filePath}`, `${user._id}`, `${parent.path}`, `${file.name}`)
+				path = join(`${req.globalFilePath}`, `${user._id}`, `${parent.path}`, `${parent.name}`, `${file.name}`)
 			} else {
-				path = pathNode.join(`${req.filePath}`, `${user._id}`, `${file.name}`)
+				path = join(`${req.globalFilePath}`, `${user._id}`, `${file.name}`)
 			}
 
 			if (fs.existsSync(path)) {
-				return res.status(400).json({ message: 'File already exists' })
+				return res.status(400).json('File already exists')
 			}
 
 			file.mv(path)
 			const type = file.name.split('.').pop()
-			let filePath = file.name
+			let filePath = ''
 			if (parent) {
-				filePath = pathNode.join(`${parent.path}`, `${file.name}`)
+				filePath = join(`${parent.path}`, `${parent.name}`)
 			}
-
 			const dbFile = new File({
 				type,
 				name: file.name,
 				size: file.size,
 				path: filePath,
 				user: user._id,
-				parent: parent ? parent._id : null,
+				parent: parent ? parent._id : null
 			})
+			user.files.push(dbFile._id)
 			await dbFile.save()
 			await user.save()
 			res.json(dbFile)
@@ -97,24 +110,27 @@ class FileController {
 	}
 	async downloadFile(req, res) {
 		try {
-			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
-			const path = fileService.getPath(req, file)
+			const file = await File.findById(req.query.id)
+			const path = fileService.getPath(req.globalFilePath, file)
 			if (fs.existsSync(path)) {
 				return res.download(path, file.name)
 			}
-			return res.status(400).json({ message: 'Download Error' })
+			res.status(400).json('Download Error')
 		} catch (e) {
 			res.status(500).json(e.message)
 		}
 	}
 	async deleteFile(req, res) {
 		try {
-			const file = await File.findOne({ _id: req.query.id, user: req.user.id })
+			const user = await User.findById(req.user.id)
+			const file = await File.findOne({ _id: req.query.id, user: user._id })
 			if (!file) {
-				return res.status(500).json({ message: 'File was not founded' })
+				return res.status(500).json('File has not founded')
 			}
-			const response = await fileService.deleteFile(req, file)
+			const response = await fileService.deleteFile(req.globalFilePath, file)
+			user.files = user.files.filter(fileId => fileId != file.id)
 			await file.remove()
+			await user.save()
 			res.json(response)
 		} catch (e) {
 			res.status(400).json(e.message)
@@ -134,10 +150,10 @@ class FileController {
 			const { file } = req.files
 			const user = await User.findById(req.user.id)
 			if (user.avatar) {
-				fs.unlinkSync(process.env.STATIC + '/' + user.avatar)
+				fs.unlinkSync(resolve() + '/static/' + user.avatar)
 			}
 			const avatarPath = uuid.v4() + '.' + file.name.split('.').pop()
-			file.mv(process.env.STATIC + '/' + avatarPath)
+			file.mv(resolve() + '/static/' + avatarPath)
 			user.avatar = avatarPath
 			const userUpdated = await user.save()
 			res.json(userUpdated)
@@ -148,10 +164,15 @@ class FileController {
 	async deleteAvatar(req, res) {
 		try {
 			const user = await User.findById(req.user.id)
-			fs.unlinkSync(process.env.STATIC + '/' + user.avatar)
-			user.avatar = null
-			const userUpdated = await user.save()
-			res.json(userUpdated)
+			const path = resolve() + '/static/' + user.avatar
+			if (fs.existsSync(path)) {
+				fs.unlinkSync(path)
+				user.avatar = null
+				const userUpdated = await user.save()
+				res.json(userUpdated)
+			} else {
+				res.json(user)
+			}
 		} catch (error) {
 			res.status(500).json(error.message)
 		}

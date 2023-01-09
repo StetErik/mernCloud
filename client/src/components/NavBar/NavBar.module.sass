@@ -1,43 +1,44 @@
 .wrapper
   margin-bottom: 100px
-.content
   height: 70px
   display: flex
   justify-content: space-between
   align-items: center
-  gap: 15px
   img
     max-width: 100%
 .title
-  font-size: 34px
-  line-height: 38px
+  font-size: 44px
+  line-height: 48px
+  font-weight: 700
+  line-height: 40px
   a
     color: #444
 .link
   color: #444
   cursor: pointer
-  font-weight: 700
-  font-size: 20px
-  line-height: 23px
+  font-weight: 600
+  font-size: 22px
+  line-height: 28px
   background: none
-  border: none
-.bottom
+.content
   display: flex
   align-items: center
   flex: 1 1 auto
+  margin-left: 15px
   justify-content: flex-end
-  gap: 15px
-.search
+.links
+  display: flex
+  gap: 30px
+.searchContainer
   flex: 1 1 auto
   position: relative
-  display: flex
-  align-items: center
+.search
   &.active
     input
       transition: .2s
-      width: 50%
       z-index: 1
       opacity: 1
+      width: 50%
   img
     width: 40px
     height: 40px
@@ -46,6 +47,7 @@
     border-radius: 10px
     border: 1px solid #444
     padding: 5px 10px
+    padding-right: 30px
     font-size: 18px
     line-height: 22px
     width: 40px
@@ -55,21 +57,17 @@
     top: 0
     z-index: -1
     opacity: 0
-    &:focus
-      transition: .2s
-      width: 50%
-      z-index: 1
-      opacity: 1
   span
-    font-size: 30px
+    font-size: 38px
     position: absolute
-    right: calc( 50% - 30px )
+    right: calc( 50% + 3px )
     color: #333
-    top: 0
     cursor: pointer
     padding: 0 5px
+    z-index: 2
 .img
   width: 40px
   height: 40px
   object-fit: cover
   border-radius: 50%
+  margin-right: 15px

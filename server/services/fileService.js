@@ -2,23 +2,23 @@ const fs = require('fs')
 const path = require('path')
 
 class FileService {
-	createDir(req, file) {
-		const filePath = this.getPath(req, file)
+	createDir(globalFilePath, file) {
+		const filePath = this.getPath(globalFilePath, file)
 		return new Promise((resolve, reject) => {
 			try {
 				if (!fs.existsSync(filePath)) {
 					fs.mkdirSync(filePath)
-					return resolve({ message: 'File was created' })
+					return resolve()
 				} else {
-					return reject({ message: 'File already exists' })
+					return reject('Folder already exists')
 				}
 			} catch (error) {
-				return reject({ message: 'File error' })
+				return reject('Folder creating error')
 			}
 		})
 	}
-	deleteFile(req, file) {
-		const path = this.getPath(req, file)
+	deleteFile(globalFilePath, file) {
+		const path = this.getPath(globalFilePath, file)
 		return new Promise((resolve, reject) => {
 			try {
 				if (file.type === 'dir') {
@@ -28,12 +28,12 @@ class FileService {
 				}
 				return resolve({ message: 'File has been deleted' })
 			} catch (e) {
-				return reject({ message: 'Directory not empty' })
+				return reject({ message: 'Directory is not empty' })
 			}
 		})
 	}
-	getPath(req, file) {
-		return path.join(`${req.filePath}`, `${file.user}`, `${file.path}`)
+	getPath(globalFilePath, file) {
+		return path.join(`${globalFilePath}`, `${file.user}`, `${file.path}`, `${file.name}`)
 	}
 }
 
